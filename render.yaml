@@ -1,0 +1,23 @@
+# Render (plan gratis): Nuevo → Blueprint → elige este repositorio. Te pedirá el enlace de tu carpeta de MEGA.
+services:
+  - type: web
+    name: mibiblioteca-acelerador
+    runtime: node
+    plan: free
+    region: virginia          # la más cercana a Colombia
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: ALLOWED_ORIGINS
+        value: https://bibliopub.netlify.app
+      - key: ALLOWED_EMAIL
+        value: brandonsimanca@gmail.com
+      - key: CACHE_MAX_MB
+        value: "1500"
+      - key: COVER_SECRET
+        generateValue: true
+      - key: MEGA_FOLDER_URL
+        sync: false
