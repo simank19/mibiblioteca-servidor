@@ -8,6 +8,10 @@ services:
     buildCommand: npm install --omit=dev
     startCommand: node server.js
     healthCheckPath: /health
+    buildFilter:              # los cambios de la app de Android no reinician el servidor
+      ignoredPaths:
+        - android/**
+        - .github/**
     envVars:
       - key: NODE_VERSION
         value: "20"

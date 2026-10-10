@@ -1,0 +1,15 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'co.mibiblioteca.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'co.mibiblioteca.app'
+        minSdk 21
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv('APK_VERSION_CODE') ?: '1')
+        versionName '1.' + (System.getenv('APK_VERSION_CODE') ?: '0')
+    }
+    buildTypes { release { minifyEnabled false } } // la firma se hace aparte, con una llave que no está en el repositorio
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies { implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0' }
