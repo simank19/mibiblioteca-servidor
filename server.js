@@ -340,10 +340,16 @@ async function gc() {
 }
 
 /* ----------------------------- HTTP ----------------------------- */
+const seenOrigins = new Set();
 function cors(req, res) {
   const o = req.headers.origin || '';
-  const ok = CFG.origins.includes(o) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o);
+  const norm = s => s.replace(/\/+$/, '').toLowerCase();
+  const ok = CFG.origins.some(x => norm(x) === norm(o)) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o);
+  // /health no tiene datos privados: cualquiera puede consultarlo (sirve para "Probar" y despertar el servidor)
+  const pub = (req.url || '').startsWith('/health');
   if (ok) { res.setHeader('Access-Control-Allow-Origin', o); res.setHeader('Vary', 'Origin'); }
+  else if (pub) res.setHeader('Access-Control-Allow-Origin', '*');
+  if (o && !ok && !seenOrigins.has(o)) { seenOrigins.add(o); log(`Origen no permitido: ${o} (agrégalo en ALLOWED_ORIGINS si es tu app)`); }
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Range');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, X-Cache');
@@ -423,6 +429,7 @@ const server = http.createServer(async (req, res) => {
 await initFirebase();
 server.listen(CFG.port, () => {
   log(`MiBiblioteca · acelerador escuchando en :${CFG.port} · caché ${CFG.cacheDir} (máx ${CFG.cacheMaxMB} MB)`);
+  log(`Orígenes permitidos: ${CFG.origins.join(', ') || '(ninguno)'}`);
   loadTree().catch(e => log('Árbol de la biblioteca: ' + e.message));
   setInterval(() => loadTree(true).catch(() => {}), CFG.treeRefreshMin * 60000).unref();
   gcSoon();
